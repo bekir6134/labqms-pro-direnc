@@ -574,7 +574,7 @@
         const kalemler = kdObj.items || [];
         const yolUcreti = parseFloat(kdObj.yol_ucreti) || 0;
         const konaklamaUcreti = parseFloat(kdObj.konaklama_ucreti) || 0;
-        const kdvOran = kdObj.kdv_oran != null ? parseFloat(kdObj.kdv_oran) : 20;
+        const kdvOran = 0;
 
         const tarih = t.teklif_tarihi ? new Date(t.teklif_tarihi).toLocaleDateString('tr-TR') : '-';
 
