@@ -2095,9 +2095,12 @@
         for(const [ieId, asamalar] of Object.entries(ieGruplar)) {
             const ie = tumIsEmirleri.find(x=>x.id==ieId);
             if(!ie) continue;
-            // Tüm sertifikalar aynı aşamadaysa iş emrini o aşamaya taşı
+            // Toplam cihaz sayısını al
+            const cihazlar = typeof ie.cihazlar === 'string' ? JSON.parse(ie.cihazlar) : (ie.cihazlar || []);
+            const toplamCihaz = cihazlar.length;
+            // Tüm cihazların sertifikası varsa VE hepsi aynı aşamadaysa iş emrini güncelle
             const tekil = [...new Set(asamalar)];
-            if(tekil.length === 1) {
+            if(tekil.length === 1 && asamalar.length === toplamCihaz) {
                 const hedefAsama = tekil[0];
                 if(ie.asama !== hedefAsama) {
                     await fetch(`/api/is-emirleri/${ieId}/asama`, {
