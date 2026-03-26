@@ -54,6 +54,11 @@ async function r2Yukle(key, buffer) {
 async function r2Indir(key) {
     return await r2Request('GET', key, null);
 }
+
+async function r2Sil(key) {
+    if (!key) return;
+    try { await r2Request('DELETE', key, null); } catch(e) {}
+}
 const puppeteer = require('puppeteer-core');
 const QRCode    = require('qrcode');
 
@@ -2962,10 +2967,12 @@ app.post('/api/imzali-pdf-yukle', async (req, res) => {
         }
 
         // Mevcut aşamayı öğren
-        const mevcut = await pool.query('SELECT asama FROM sertifikalar WHERE id=$1', [sertifika_id]);
+        const mevcut = await pool.query('SELECT asama, olcum_pdf_url, sertifika_pdf FROM sertifikalar WHERE id=$1', [sertifika_id]);
         if (!mevcut.rows.length) return res.status(404).json({ error: 'Sertifika bulunamadı' });
 
         const mevcutAsama = mevcut.rows[0].asama;
+        const mevcutOlcumKey = mevcut.rows[0].olcum_pdf_url;
+        const mevcutImzaliKey = mevcut.rows[0].sertifika_pdf;
 
         // Aşama geçişi: hazırlanıyor → imzalandı, imzalandı → onaylandı
         let yeniAsama = mevcutAsama;
@@ -2979,6 +2986,14 @@ app.post('/api/imzali-pdf-yukle', async (req, res) => {
             'UPDATE sertifikalar SET sertifika_pdf=$1, asama=$2 WHERE id=$3',
             [imzaKey, yeniAsama, sertifika_id]
         );
+
+        // Onaylandı aşamasına geçince ölçüm ve imzalı PDF'leri R2'den sil
+        if (yeniAsama === 'onaylandı') {
+            await r2Sil(mevcutOlcumKey);
+            if (mevcutImzaliKey && mevcutImzaliKey.startsWith('imzali/')) {
+                await r2Sil(mevcutImzaliKey);
+            }
+        }
 
         console.log(`[EronSign] Sertifika #${sertifika_id}: ${mevcutAsama} → ${yeniAsama}`);
         res.json({ ok: true, sertifika_id, eski_asama: mevcutAsama, yeni_asama: yeniAsama });

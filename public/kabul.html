@@ -212,10 +212,23 @@
             <div id="hizliModalBilgi" style="background:#fffbeb;border:1px solid #fbbf24;border-radius:8px;padding:9px 13px;font-size:0.82rem;color:#92400e;margin-bottom:16px;">
                 ⚡ Kayıt sonrası cihaz otomatik olarak kabul fişine eklenecektir.
             </div>
+            <!-- Kütüphane mini form -->
+            <div id="kutuphaneMiniForm" style="display:none;background:#f0f9ff;border:1px solid #bae6fd;border-radius:8px;padding:12px;margin-bottom:12px;">
+                <div style="font-weight:600;font-size:0.85rem;margin-bottom:8px;color:#0369a1;">📚 Kütüphaneye Yeni Cihaz Ekle</div>
+                <div class="fg fg2" style="margin-bottom:8px;">
+                    <div><label>Cihaz Adı *</label><input type="text" id="km_cihaz_adi" placeholder="Örn: Termometre"></div>
+                    <div><label>Kategori *</label><select id="km_kategori_id"></select></div>
+                </div>
+                <div style="display:flex;gap:8px;">
+                    <button type="button" onclick="kutuphaneMiniKaydet()" style="background:#0284c7;color:white;border:none;padding:7px 14px;border-radius:7px;font-weight:600;cursor:pointer;font-size:0.82rem;">💾 Kaydet</button>
+                    <button type="button" onclick="kutuphaneMiniFormKapat()" style="background:#f1f5f9;color:#475569;border:none;padding:7px 14px;border-radius:7px;font-weight:600;cursor:pointer;font-size:0.82rem;">İptal</button>
+                </div>
+            </div>
             <div class="fg fg2">
-                <div>
-                    <label>Cihaz Adı *</label>
-                    <input type="text" id="h_cihaz_adi" placeholder="Örn: Termometre">
+                <div style="position:relative;">
+                    <label>Cihaz Adı * <span onclick="kutuphaneMiniFormAc()" style="font-size:0.73rem;color:#2563eb;cursor:pointer;margin-left:6px;font-weight:500;">+ Kütüphaneye Ekle</span></label>
+                    <input type="text" id="h_cihaz_adi" placeholder="Yazın veya listeden seçin..." autocomplete="off">
+                    <div id="h_cihaz_dropdown" style="display:none;position:absolute;top:100%;left:0;right:0;background:white;border:1px solid #cbd5e1;border-radius:8px;box-shadow:0 4px 12px rgba(0,0,0,0.1);z-index:9999;max-height:200px;overflow-y:auto;"></div>
                 </div>
                 <div>
                     <label>Kategori *</label>
@@ -405,6 +418,7 @@
 
     let musteriler = [], tumCihazlar = [], filtreliCihazlar = [];
     let tumKayitlar = [], tumKategoriler = [];
+    let tumKutuphaneCihazlar = [];
     let aktifAsamaFiltre = "";
     let secilenCihazlar = []; // { musteri_cihaz_id, cihaz_adi, marka, model, seri_no, envanter_no, kategori_adi, durum, aksesuar }
 
@@ -722,7 +736,9 @@
         document.getElementById("hizliModalBilgi").style.display = '';
         document.getElementById("hizliKaydetBtn").style.display = '';
         document.getElementById("hizliGuncelleBtn").style.display = 'none';
+        document.getElementById("kutuphaneMiniForm").style.display = "none";
         document.getElementById("hizliModal").classList.add("open");
+        cihazAutocompleteKur();
     }
 
     function hizliDuzenleAc(idx) {
@@ -793,6 +809,92 @@
 
     function hizliModalKapat() {
         document.getElementById("hizliModal").classList.remove("open");
+        document.getElementById("h_cihaz_dropdown").style.display = "none";
+    }
+
+    // ── CİHAZ AUTOCOMPLETE ──
+    function cihazAutocompleteKur() {
+        const input = document.getElementById("h_cihaz_adi");
+        const dropdown = document.getElementById("h_cihaz_dropdown");
+
+        const goster = () => {
+            const val = input.value.trim().toLowerCase();
+            const eslesme = tumKutuphaneCihazlar.filter(c =>
+                c.cihaz_adi.toLowerCase().includes(val)
+            ).slice(0, 10);
+
+            if (!eslesme.length || !val) { dropdown.style.display = "none"; return; }
+
+            dropdown.innerHTML = eslesme.map(c =>
+                `<div class="arama-item" data-kid="${c.id}" data-adi="${c.cihaz_adi.replace(/"/g,'&quot;')}" data-katid="${c.kategori_id}"
+                    style="padding:8px 12px;cursor:pointer;font-size:0.84rem;border-bottom:1px solid #f1f5f9;">
+                    <strong>${c.cihaz_adi}</strong>
+                    ${c.kategori_adi ? `<span style="color:#94a3b8;margin-left:6px;font-size:0.78rem;">— ${c.kategori_adi}</span>` : ''}
+                </div>`
+            ).join('');
+
+            dropdown.querySelectorAll(".arama-item").forEach(el => {
+                el.addEventListener("mousedown", e => {
+                    e.preventDefault();
+                    input.value = el.dataset.adi;
+                    const katId = el.dataset.katid;
+                    if (katId) document.getElementById("h_kategori_id").value = katId;
+                    dropdown.style.display = "none";
+                });
+            });
+            dropdown.style.display = "block";
+        };
+
+        input.removeEventListener("input", input._acGoster);
+        input.removeEventListener("focus", input._acGoster);
+        input._acGoster = goster;
+        input.addEventListener("input", goster);
+        input.addEventListener("focus", goster);
+        document.addEventListener("mousedown", e => {
+            if (!input.contains(e.target) && !dropdown.contains(e.target))
+                dropdown.style.display = "none";
+        });
+    }
+
+    // ── KÜTÜPHANEYİ EKLE MİNİ FORM ──
+    function kutuphaneMiniFormAc() {
+        const mevcut = document.getElementById("h_cihaz_adi").value.trim();
+        document.getElementById("km_cihaz_adi").value = mevcut;
+        // Kategori select'i doldur
+        const sel = document.getElementById("km_kategori_id");
+        sel.innerHTML = '<option value="">— Seçin —</option>' +
+            tumKategoriler.map(k => `<option value="${k.id}">${k.kategori_adi}</option>`).join('');
+        // Mevcut kategori seçiliyse onu ayarla
+        const mevcutKat = document.getElementById("h_kategori_id").value;
+        if (mevcutKat) sel.value = mevcutKat;
+        document.getElementById("kutuphaneMiniForm").style.display = "block";
+        document.getElementById("km_cihaz_adi").focus();
+    }
+
+    function kutuphaneMiniFormKapat() {
+        document.getElementById("kutuphaneMiniForm").style.display = "none";
+        document.getElementById("km_cihaz_adi").value = "";
+        document.getElementById("km_kategori_id").value = "";
+    }
+
+    async function kutuphaneMiniKaydet() {
+        const cihazAdi = document.getElementById("km_cihaz_adi").value.trim();
+        const kategoriId = document.getElementById("km_kategori_id").value;
+        if (!cihazAdi) return showToast("❌ Cihaz adı gerekli!", true);
+        if (!kategoriId) return showToast("❌ Kategori seçin!", true);
+        try {
+            const res = await fetch("/api/cihaz-kutuphanesi", {
+                method: "POST",
+                headers: { "Content-Type": "application/json" },
+                body: JSON.stringify({ cihaz_adi: cihazAdi, kategori_id: parseInt(kategoriId) })
+            });
+            const yeni = await res.json();
+            tumKutuphaneCihazlar.push(yeni);
+            document.getElementById("h_cihaz_adi").value = yeni.cihaz_adi;
+            document.getElementById("h_kategori_id").value = yeni.kategori_id;
+            kutuphaneMiniFormKapat();
+            showToast("✅ Cihaz kütüphaneye eklendi");
+        } catch(e) { showToast("❌ Hata: " + e.message, true); }
     }
 
     async function hizliCihazKaydet() {
@@ -1074,6 +1176,12 @@
         personeller   = d.personeller||[];
         teklifler     = d.teklifler||[];
         tumKategoriler = await katRes.json();
+
+        // Cihaz kütüphanesini çek (autocomplete için)
+        try {
+            const kutRes = await fetch("/api/cihaz-kutuphanesi");
+            tumKutuphaneCihazlar = await kutRes.json();
+        } catch(e) { tumKutuphaneCihazlar = []; }
 
         // Teslim alan dropdown
         const taSel = document.getElementById("teslim_alan_id");
