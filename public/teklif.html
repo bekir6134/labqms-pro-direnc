@@ -288,13 +288,8 @@
                 <label>🏨 Konaklama Ücreti</label>
                 <input type="number" id="konaklama_ucreti" value="0" min="0" placeholder="0.00" oninput="toplamHesapla()">
             </div>
-            <div>
-                <label>📊 KDV Oranı (%)</label>
-                <select id="kdv_oran" onchange="toplamHesapla()" style="width:100%;padding:10px 12px;border:1px solid var(--border);border-radius:8px;font-family:inherit;font-size:0.9rem;">
-                    <option value="0">%0 KDV Yok</option>
-                    <option value="10">%10 KDV</option>
-                    <option value="20" selected>%20 KDV</option>
-                </select>
+            <div style="display:none;">
+                <select id="kdv_oran"><option value="0" selected>0</option></select>
             </div>
         </div>
 
@@ -484,7 +479,7 @@
         const pb = satirlar.length>0?satirlar[0].pb:'₺';
         document.getElementById("kalemSayisi").textContent = satirlar.length+" kalem";
         document.getElementById("araToplam").textContent = ara.toLocaleString('tr-TR',{minimumFractionDigits:2})+' '+pb;
-        document.getElementById("genelToplam").textContent = `KDV Hariç: ${kdvHaric.toLocaleString('tr-TR',{minimumFractionDigits:2})} ${pb} | KDV Dahil: ${kdvDahil.toLocaleString('tr-TR',{minimumFractionDigits:2})} ${pb}`;
+        document.getElementById("genelToplam").textContent = `${kdvHaric.toLocaleString('tr-TR',{minimumFractionDigits:2})} ${pb}`;
         document.getElementById("indirimTutar").textContent = ind>0?`− ${indTutar.toLocaleString('tr-TR',{minimumFractionDigits:2})} ${pb} indirim`:'';
     }
 
@@ -737,12 +732,11 @@ ${t.teklif_notu ? `<div class="note-box"><strong>Not / Note:</strong> ${t.teklif
         ${indOran > 0 ? `<div class="totals-item"><div class="t-lbl">İndirim / Discount (%${indOran})</div><div class="t-val" style="color:#dc2626;">− ${fmt(indTutar)} ${pb}</div></div>` : ''}
         ${yolUcreti > 0 ? `<div class="totals-item"><div class="t-lbl">🚗 Yol Ücreti / Travel Fee</div><div class="t-val">${fmt(yolUcreti)} ${pb}</div></div>` : ''}
         ${konaklamaUcreti > 0 ? `<div class="totals-item"><div class="t-lbl">🏨 Konaklama Ücreti / Accommodation Fee</div><div class="t-val">${fmt(konaklamaUcreti)} ${pb}</div></div>` : ''}
-        <div class="totals-item" style="background:#f0f9ff;"><div class="t-lbl" style="color:#0369a1;font-weight:bold;">KDV Hariç Toplam / Total Excl. VAT</div><div class="t-val" style="color:#0369a1;">${fmt(kdvHaric)} ${pb}</div></div>
-        ${kdvOran > 0 ? `<div class="totals-item"><div class="t-lbl">KDV (%${kdvOran}) / VAT</div><div class="t-val">${fmt(kdvTutar)} ${pb}</div></div>` : ''}
+        <div class="totals-item" style="background:#f0f9ff;"><div class="t-lbl" style="color:#0369a1;font-weight:bold;">Net Toplam / Total</div><div class="t-val" style="color:#0369a1;">${fmt(kdvHaric)} ${pb}</div></div>
     </div>
     <div class="totals-final">
-        <div><div class="t-main-lbl">GENEL TOPLAM (KDV DAHİL) / GRAND TOTAL (VAT INC.)</div></div>
-        <div class="t-main-val">${fmt(kdvDahil)} ${pb}</div>
+        <div><div class="t-main-lbl">GENEL TOPLAM / GRAND TOTAL</div></div>
+        <div class="t-main-val">${fmt(kdvHaric)} ${pb}</div>
     </div>
 </div>
 
@@ -751,7 +745,7 @@ ${t.teklif_notu ? `<div class="note-box"><strong>Not / Note:</strong> ${t.teklif
 <div class="aciklamalar">
 <h3>C - AÇIKLAMALAR / TERMS & CONDITIONS</h3>
 <ol>
-<li>Fiyatlara KDV dahil değildir. / Prices are exclusive of VAT.</li>
+<li>Belirtilen fiyatlar KDV hariçtir. / Prices are exclusive of VAT.</li>
 <li>Ödeme, sertifika tesliminden önce nakit ya da karşılıklı anlaşılan ve Müşteri tarafından yazılı teyid edilen şartlarda tahsil edilir.</li>
 <li>Bu sözleşmede verilmiş olan toplam fiyat, mevcut cihaz sayısına göre belirlenmiş olup, cihaz sayısının değişmesi durumunda AYER Kalibrasyon laboratuvarı sözleşmeyi değiştirme hakkına sahiptir.</li>
 <li>Laboratuarımıza gelen/gönderilen cihazların kayıt ve kabul işlemleri görsel kontrol ile yapılmaktadır. Görsel kontrol hiçbir şekilde fonksiyon kontrolünü kapsamaz.</li>
