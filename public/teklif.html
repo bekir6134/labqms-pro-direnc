@@ -728,14 +728,12 @@ ${t.teklif_notu ? `<div class="note-box"><strong>Not / Note:</strong> ${t.teklif
 
 <div class="totals-box">
     <div class="totals-row">
-        <div class="totals-item"><div class="t-lbl">Kalibrasyon Ara Toplam / Subtotal</div><div class="t-val">${fmt(araToplam)} ${pb}</div></div>
         ${indOran > 0 ? `<div class="totals-item"><div class="t-lbl">İndirim / Discount (%${indOran})</div><div class="t-val" style="color:#dc2626;">− ${fmt(indTutar)} ${pb}</div></div>` : ''}
         ${yolUcreti > 0 ? `<div class="totals-item"><div class="t-lbl">🚗 Yol Ücreti / Travel Fee</div><div class="t-val">${fmt(yolUcreti)} ${pb}</div></div>` : ''}
         ${konaklamaUcreti > 0 ? `<div class="totals-item"><div class="t-lbl">🏨 Konaklama Ücreti / Accommodation Fee</div><div class="t-val">${fmt(konaklamaUcreti)} ${pb}</div></div>` : ''}
-        <div class="totals-item" style="background:#f0f9ff;"><div class="t-lbl" style="color:#0369a1;font-weight:bold;">Net Toplam / Total</div><div class="t-val" style="color:#0369a1;">${fmt(kdvHaric)} ${pb}</div></div>
     </div>
     <div class="totals-final">
-        <div><div class="t-main-lbl">GENEL TOPLAM / GRAND TOTAL</div></div>
+        <div><div class="t-main-lbl">GENEL TOPLAM (KDV HARİÇ) / GRAND TOTAL (EXCL. VAT)</div></div>
         <div class="t-main-val">${fmt(kdvHaric)} ${pb}</div>
     </div>
 </div>
